@@ -1990,7 +1990,43 @@ static bool spikes_at(float x,float y,int w,int h,float xspd,float yspd) {
 	return false;
 }
 
-//////////END/////////
+
+//////////END OF C CODE/////////
+
+////////// Python sim helpers/////////
+
+int Celeste_P8_get_deaths() {
+    return deaths; 
+}
+
+// Get x coords, if oject is an active player, return its x coord
+float Celeste_P8_get_player_x() {
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+        if (objects[i].active && objects[i].type == OBJ_PLAYER) {
+            return objects[i].x;
+        } 
+    }
+    return -1;
+}
+
+// Same as above func
+float Celeste_P8_get_player_y() {
+    for (int i = 0; i < MAX_OBJECTS; i++) {
+        if (objects[i].active && objects[i].type == OBJ_PLAYER) {
+            return objects[i].y;
+        } 
+    }
+    return -1;
+}
+
+void Celeste_P8_start_game(void) {
+    begin_game();
+}
+
+
+
+
+/////// END /////////
 
 void Celeste_P8__DEBUG(void) {
 	if (is_title()) start_game = true, start_game_flash=1;
