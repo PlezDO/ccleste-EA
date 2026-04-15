@@ -23,6 +23,8 @@ extern void Celeste_P8_update(void);
 extern void Celeste_P8_draw(void);
 
 extern void Celeste_P8__DEBUG(void); //debug functionality
+                                     //
+extern void Celeste_P8_load_room(int x, int y);
 
 //state functionality
 size_t Celeste_P8_get_state_size(void);

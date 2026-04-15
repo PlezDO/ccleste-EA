@@ -2023,7 +2023,13 @@ void Celeste_P8_start_game(void) {
     begin_game();
 }
 
+void Celeste_P8_load_room(int x, int y) {
+    load_room(x, y);
+}
 
+int Celeste_P8_get_level_index() {
+    return level_index();
+}
 
 
 /////// END /////////
