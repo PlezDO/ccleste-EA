@@ -71,6 +71,10 @@ def wait_for_spawn():
             return
         lib.Celeste_P8_update() 
 
+# takes level index as arugment and returns its x, y 
+def level_to_room(level_index):
+    return (level_index % 8, level_index // 8)
+
 
 
 def run_genome(input_genome, room_x=0, room_y=0):
