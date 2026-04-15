@@ -67,7 +67,7 @@ lib.Celeste_P8_set_call_func(c_callback)
 # stop inputs from being made until player is spawned
 def wait_for_spawn():
     for _ in range(60): # first 60 frames
-        if lib.Celeste_P8_get_player_x() != -1.0: # if player not yet spawned
+        if lib.Celeste_P8_get_player_x() != -1.0: # if player is spawned
             return
         lib.Celeste_P8_update() 
 
@@ -109,7 +109,7 @@ def run_genome(input_genome, room_x=0, room_y=0):
             break
 
     return {
-            # use fallback pos of 8, 96 (starting pos) if last pos invalid
+            # use fallback pos of starting pos if last pos invalid 
             "final_x": x_positions[-1] if x_positions else spawn_x,
             "final_y": y_positions[-1] if y_positions else spawn_y,
 
