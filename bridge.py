@@ -119,5 +119,6 @@ def run_genome(input_genome, room_x=0, room_y=0):
 
             "deaths": death_count,
             "goal_reached": reached_goal,
+            "frames": current_frame,
             "trajectory": list(zip(x_positions, y_positions))
             }
