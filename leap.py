@@ -10,7 +10,7 @@ from leap_ec.algorithm import generational_ea
 from leap_ec.decoder import IdentityDecoder
 from leap_ec.problem import ScalarProblem
 
-frames = 10
+FRAMES = 10
 
 def mutate_bytes(p=0.1):
     def _mutate(population):
@@ -32,7 +32,7 @@ class ByteArrayProblem(ScalarProblem):
     # Our custom fitness function
     def evaluate(self, phenome):
 
-        target = np.array([0 for _ in range(frames)], dtype=np.uint8)
+        target = np.array([0 for _ in range(FRAMES)], dtype=np.uint8)
 
         diff = phenome.astype(np.int32) - target.astype(np.int32)
         return -np.sum(np.abs(diff))
@@ -43,7 +43,7 @@ def create_genome(length):
 
 
 if __name__ == "__main__":
-    genome_length = frames
+    genome_length = FRAMES
     pop_size = 50
     generations = 50
 
