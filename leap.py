@@ -10,8 +10,21 @@ from leap_ec.algorithm import generational_ea
 from leap_ec.decoder import IdentityDecoder
 from leap_ec.problem import ScalarProblem
 
-FRAMES = 10
+# Easy place to manipulate the values
+FRAMES = 60
+POPULATION = 10
+GENS = 10
+TRN_SIZE = 3
 
+# Should hopefully kill off individuals who die
+def remove_dead():
+    def _op(population):
+        for ind in population:
+            if ind.fitness != float('-inf'):  # or your death condition
+                yield ind
+    return _op
+
+# Should mutate bytes in the genomes
 def mutate_bytes(p=0.1):
     def _mutate(population):
         for individual in population:
@@ -32,10 +45,15 @@ class ByteArrayProblem(ScalarProblem):
     # Our custom fitness function
     def evaluate(self, phenome):
 
-        target = np.array([0 for _ in range(FRAMES)], dtype=np.uint8)
+        # Runs the simulation
+        result = bridge.run_genome(phenome)
 
-        diff = phenome.astype(np.int32) - target.astype(np.int32)
-        return -np.sum(np.abs(diff))
+        # Should kill individuals who die with the use of the "remove_dead" function
+        if result['deaths'] >= 1:
+            return float('-inf')
+        
+        # Temporarily optimizing for x
+        return result['final_x']
 
 
 def create_genome(length):
@@ -44,8 +62,8 @@ def create_genome(length):
 
 if __name__ == "__main__":
     genome_length = FRAMES
-    pop_size = 50
-    generations = 50
+    pop_size = POPULATION
+    generations = GENS
 
     problem = ByteArrayProblem(maximize=True)
 
@@ -62,19 +80,22 @@ if __name__ == "__main__":
         representation=representation,
 
         pipeline=[
-            ops.tournament_selection(k=10),
+            ops.tournament_selection(k=TRN_SIZE),
             ops.clone,
 
-            ops.UniformCrossover(p_swap=0.5),
+            ops.UniformCrossover(),
 
             mutate_bytes(),
 
             ops.evaluate,
+            remove_dead(),
             ops.pool(size=pop_size)
         ]
     )
 
-    # Print best individual
-    best = max(final_pop)
-    print("Best genome:", best.genome)
-    print("Best fitness:", best.fitness)
+    # Currently sorts the final genomes and prints them out along with their fitness
+    final_pop.sort()
+    for i in final_pop:
+        print("Genome: ", i.genome)
+        print("Fitness", i.fitness)
+        print("\n")
