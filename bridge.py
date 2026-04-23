@@ -107,10 +107,15 @@ def run_genome(input_genome, room_x=0, room_y=0):
         death_count = lib.Celeste_P8_get_deaths() 
         current_frame+=1
 
+        if death_count > 0:
+            break
+        
         # if player advanced to next level, reached goal and end early
         if lib.Celeste_P8_get_level_index() != start_level:
             reached_goal = True
             break
+
+        
 
     return {
             # use fallback pos of starting pos if last pos invalid 
