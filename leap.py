@@ -1,5 +1,7 @@
 import bridge
 
+from datetime import datetime
+
 import random
 import numpy as np
 
@@ -59,6 +61,19 @@ class ByteArrayProblem(ScalarProblem):
 def create_genome(length):
     return np.random.randint(0, 256, size=length, dtype=np.uint8)
 
+# Takes a genome and saves it in TAS in the genomes dir
+def save_tas(genome, fitness, generation):
+    timestamp  = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = f"genomes/gen{generation}_fit{fitness:.1f}_{timestamp}.tas"
+
+    with open(path, "w") as f:
+        for b in genome:
+            f.write(f"{int(b)},")
+    print(f"Genome saved to {path}")
+
+    return path
+
+
 
 if __name__ == "__main__":
     genome_length = FRAMES
@@ -95,6 +110,10 @@ if __name__ == "__main__":
 
     # Currently sorts the final genomes and prints them out along with their fitness
     final_pop.sort()
+    best_ind = final_pop[-1]
+    save_tas(best_ind.genome, best_ind.fitness, generations)
+
+
     for i in final_pop:
         print("Genome: ", i.genome)
         print("Fitness", i.fitness)

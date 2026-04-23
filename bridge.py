@@ -66,7 +66,7 @@ lib.Celeste_P8_set_call_func(c_callback)
 
 # stop inputs from being made until player is spawned
 def wait_for_spawn():
-    for _ in range(60): # first 60 frames
+    for _ in range(80): # first 60 frames
         if lib.Celeste_P8_get_player_x() != -1.0: # if player is spawned
             return
         lib.Celeste_P8_update() 

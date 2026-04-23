@@ -16,3 +16,6 @@ ccleste-start-fullscreen.txt
 
 __pycache__/
 celeste.so
+
+.venv/
+genomes/*
