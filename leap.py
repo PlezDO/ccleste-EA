@@ -27,14 +27,14 @@ GOAL_X = 112
 GOAL_Y = 0
 
 # Should hopefully kill off individuals who die
-def remove_dead(fallback):
+def remove_dead():
     def _op(population):
         #elitest_survival exepcts list in multiprocessed context
         living = []
         for ind in population:
             if ind.fitness != float('-inf'):
                 living.append(ind)
-        return living if living else fallback # if all died, use previos gen
+        return living 
     return _op
 
 # Should mutate bytes in the genomes
@@ -66,6 +66,10 @@ class ByteArrayProblem(ScalarProblem):
 
         if result['goal_reached']:
             return float('inf') # if player reaches goal, return infinite fitness
+
+        # kill individuals who die
+        if result['deaths'] >= 1:
+            return float('-inf')
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
@@ -116,7 +120,11 @@ if __name__ == "__main__":
     # LocalCluster creates processes, with each having its own memory space. 
     # This way C globals for celeste sim won't cause collisions
     with LocalCluster(n_workers=N_WORKERS, threads_per_worker=1) as cluster, Client(cluster) as client:
-    
+  
+        # to track best individual, so we have something if every individual dies
+        genghis = None
+        genghis_fitness = float('-inf')
+
         for gen in range(generations):
             final_pop = generational_ea(
                 max_generations=1,
@@ -135,19 +143,26 @@ if __name__ == "__main__":
 
                     #ops.evaluate,
                     synchronous.eval_pool(client=client, size=pop_size),
-
+                    remove_dead()
                     #ops.pool(size=pop_size)
                 ]
             )
 
             parents = final_pop
+
             best_fitness = float('-inf')
             best = None
             for ind in parents:
                 if ind.fitness > best_fitness:
                     best_fitness = ind.fitness
                     best = ind
-        print(f"Gen {gen+1} | best fitness: {best_fitness:.2f}")
+            print(f"Gen {gen+1} | best fitness: {best_fitness:.2f}")
+
+            if best_fitness > genghis_fitness:
+                genghis_fitness = best_fitness
+                genghis = best
+
+        save_tas(genghis.genome, genghis_fitness, generations)
 
     # Currently sorts the final genomes and prints them out along with their fitness
     final_pop.sort()
