@@ -18,9 +18,9 @@ import multiprocessing
 
 # Easy place to manipulate the values
 FRAMES = 500
-POPULATION = 10
-GENS = 10
-TRN_SIZE = 3
+POPULATION = 100
+GENS = 1000
+TRN_SIZE = 5
 N_WORKERS = multiprocessing.cpu_count()
 
 GOAL_X = 112
@@ -38,7 +38,7 @@ def remove_dead():
     return _op
 
 # Should mutate bytes in the genomes
-def mutate_bytes(p=0.1):
+def mutate_bytes(p=0.05):
     def _mutate(population):
         for individual in population:
             genome = individual.genome
@@ -68,21 +68,23 @@ class ByteArrayProblem(ScalarProblem):
             return float('inf') # if player reaches goal, return infinite fitness
 
         # kill individuals who die
-        if result['deaths'] >= 1:
-            return float('-inf')
+        #if result['deaths'] >= 1:
+        #    return float('-inf')
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
-        best_dist = float('inf')
+        best_score = float('inf')
         for x, y in result['trajectory']:
+            height_score = -y * 2 # reward low y 
             dist = math.sqrt((x - GOAL_X) ** 2 + (y - GOAL_Y) ** 2)
-            if dist < best_dist:
-                best_dist = dist
+            score = height_score - dist
+            if score > best_score:
+                best_score = score
 
         # Invert so higher fitness = closer to goal
-        if best_dist == float('inf'):
+        if best_score == float('inf'):
             return 0
-        return -best_dist
+        return best_score
 
 
 
