@@ -73,7 +73,7 @@ class ByteArrayProblem(ScalarProblem):
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
-        best_score = float('inf')
+        best_score = float('-inf')
         for x, y in result['trajectory']:
             height_score = -y * 2 # reward low y 
             dist = math.sqrt((x - GOAL_X) ** 2 + (y - GOAL_Y) ** 2)
