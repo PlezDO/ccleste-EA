@@ -98,13 +98,14 @@ def run_genome(input_genome, room_x=0, room_y=0):
 
     # What level are we training for?
     start_level = lib.Celeste_P8_get_level_index()
+    deaths_at_start = lib.Celeste_P8_get_deaths()
     
     for _ in genome:
         lib.Celeste_P8_update()
         if lib.Celeste_P8_get_player_x() != -1.0: # filter out invalid positions
             x_positions.append(lib.Celeste_P8_get_player_x())
             y_positions.append(lib.Celeste_P8_get_player_y())
-        death_count = lib.Celeste_P8_get_deaths() 
+        death_count = lib.Celeste_P8_get_deaths() - deaths_at_start 
         current_frame+=1
 
         if death_count > 0:
