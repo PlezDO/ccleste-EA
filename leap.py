@@ -45,7 +45,8 @@ def mutate_bytes(p=0.05):
 
             for i in range(len(genome)):
                 if random.random() < p:
-                    genome[i] = random.randint(0, 255)
+                    bit = 1 << random.randint(0, 7)
+                    genome[i] = np.uint8(genome[i] ^ bit)
 
             yield individual
 
@@ -75,7 +76,7 @@ class ByteArrayProblem(ScalarProblem):
         # this might be problematic, we should consider time penalties, or saving last pos
         best_score = float('-inf')
         for x, y in result['trajectory']:
-            height_score = -y * 2 # reward low y 
+            height_score = -y * 5 # reward low y 
             dist = math.sqrt((x - GOAL_X) ** 2 + (y - GOAL_Y) ** 2)
             score = height_score - dist
             if score > best_score:
@@ -139,7 +140,7 @@ if __name__ == "__main__":
                     ops.tournament_selection(k=TRN_SIZE),
                     ops.clone,
 
-                    ops.UniformCrossover(),
+                    ops.UniformCrossover(p_xover=0.02),
 
                     mutate_bytes(),
 
