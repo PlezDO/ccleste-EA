@@ -17,10 +17,10 @@ from leap_ec.distrib import DistributedIndividual, synchronous
 import multiprocessing
 
 # Easy place to manipulate the values
-FRAMES = 500
-POPULATION = 100
-GENS = 1000
-TRN_SIZE = 5
+FRAMES = 450
+POPULATION = 300
+GENS = 300
+TRN_SIZE = 20
 N_WORKERS = multiprocessing.cpu_count()
 
 GOAL_X = 112
@@ -64,12 +64,12 @@ class ByteArrayProblem(ScalarProblem):
         # Runs the simulation
         result = bridge.run_genome(phenome)
 
-        if result['goal_reached']:
-            return float('inf') # if player reaches goal, return infinite fitness
+        # if result['goal_reached']:
+        #     return float('inf') # if player reaches goal, return infinite fitness
 
         # kill individuals who die
-        if result['deaths'] >= 1:
-           return float('-inf')
+        # if result['deaths'] >= 1:
+        #    return float('-inf')
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
@@ -133,7 +133,7 @@ if __name__ == "__main__":
                 pop_size=pop_size,
                 problem=problem,
                 representation=representation,
-                k_elites=2, # always keep 2 best individuals so multiprocessing doesnt crash
+                k_elites=10, # always keep 2 best individuals so multiprocessing doesnt crash
 
                 pipeline=[
                     ops.tournament_selection(k=TRN_SIZE),

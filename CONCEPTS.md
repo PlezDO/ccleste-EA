@@ -1,12 +1,12 @@
-|Inputs            |Data              |
-|:----------------:|:----------------:|
-|NO OP             |000000            |
-|LEFT              |000001            |
-|RIGHT             |000010            |
-|JUMP              |000100            |
-|DASH              |001000            |
-|UP                |010000            |
-|DOWN              |100000            |
+|Inputs            |Data              |Data              |
+|:----------------:|:----------------:|:----------------:|
+|NO OP             |000000            |0                 |
+|LEFT              |000001            |1                 |
+|RIGHT             |000010            |2                 |
+|UP                |000100            |4                 |
+|DOWN              |001000            |8                 |
+|JUMP              |010000            |16                |
+|DASH              |100000            |32                |
 
 Fitness Function:
 Minimum Time + Not Dying + Completion %
