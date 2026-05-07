@@ -20,3 +20,4 @@ celeste.so
 .venv/
 genomes/*
 graph-data/*
+graphs/*

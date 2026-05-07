@@ -50,6 +50,7 @@ N_ITERATIONS = 5
 RESULTS_CSV = "./graph-data/master_results.csv"
 
 def header_writer(path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     if not os.path.exists(path):
         file = open(path, "w", newline="")
         csv.writer(file).writerow([
