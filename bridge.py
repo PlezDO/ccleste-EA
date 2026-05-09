@@ -48,6 +48,9 @@ lib.Celeste_P8_start_game.restype = None
 lib.Celeste_P8_load_room.argtypes = [ctypes.c_int, ctypes.c_int]
 lib.Celeste_P8_load_room.restype = None
 
+lib.Celeste_P8_get_level_index.argtypes = []
+lib.Celeste_P8_get_level_index.restype = ctypes.c_int
+
 def p8_callback(calltype, a0, a1):
     if calltype == CB_BTN:
         # send button

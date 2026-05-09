@@ -36,14 +36,14 @@ GOAL_Y = 0
 DEFAULT_N = 300
 DEFAULT_PM = .05
 DEFAULT_PC = .02
-DEFAULT_TRN_SIZE = 4
+DEFAULT_TRN_SIZE = 10
 
 # Parameter Constants
 
 SWEEP_N = [100, 200, 300, 500]
 SWEEP_PM = [.01, .03, .05, .08]
 SWEEP_PC = [0.0, .01, .02, .05]
-SWEEP_TRN_SIZE = [2, 4, 6, 10]
+SWEEP_TRN_SIZE = [2, 4, 10, 20]
 
 N_ITERATIONS = 5
 
@@ -156,22 +156,19 @@ class ByteArrayProblem(ScalarProblem):
 
         # kill individuals who die
         if result['deaths'] >= 1:
-           return float('-1000')
+           return float('-425')
+
+        if not result['trajectory']:
+           return float('-425')
+
+        last_x, last_y = result['trajectory'][-1]
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
-        best_score = float('-inf')
-        for x, y in result['trajectory']:
-            height_score = -y * 5 # reward low y 
-            dist = math.sqrt((x - GOAL_X) ** 2 + (y - GOAL_Y) ** 2)
-            score = height_score - dist
-            if score > best_score:
-                best_score = score
+        height_score = -last_y * 5 
+        dist = math.sqrt((last_x - GOAL_X) ** 2 + (last_y - GOAL_Y) ** 2)
 
-        # Invert so higher fitness = closer to goal
-        if best_score == float('inf'):
-            return 0
-        return best_score
+        return height_score - dist
 
 def create_genome(length):
     return np.random.randint(0, 256, size=length, dtype=np.uint8)
