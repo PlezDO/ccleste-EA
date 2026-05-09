@@ -173,8 +173,6 @@ class ByteArrayProblem(ScalarProblem):
             return 0
         return best_score
 
-
-
 def create_genome(length):
     return np.random.randint(0, 256, size=length, dtype=np.uint8)
 
@@ -205,6 +203,9 @@ def run_single(client, n, pm, pc, trn_size, iteration):
     genghis = None
     genghis_fitness = float('-inf')
 
+    parents = representation.create_population(n, problem)
+    parents = list(synchronous.eval_pool(client=client, size=n)(iter(parents)))
+
     for gen in range(GENS):
         final_pop = generational_ea(
             max_generations=1,
@@ -214,6 +215,7 @@ def run_single(client, n, pm, pc, trn_size, iteration):
             k_elites=10, # always keep 10 best individuals so multiprocessing doesnt crash
 
             pipeline=[
+                lambda _: parents,
                 ops.tournament_selection(k=trn_size),
                 ops.clone,
                 ops.UniformCrossover(p_xover=pc),
