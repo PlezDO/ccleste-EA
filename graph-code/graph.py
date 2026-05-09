@@ -5,6 +5,18 @@ import seaborn as sns
 import os
 os.makedirs("../graphs", exist_ok=True)
 
+plt.rcParams.update({
+    'font.size': 8,
+    'axes.titlesize': 8,
+    'axes.labelsize': 8,
+    'xtick.labelsize': 7,
+    'ytick.labelsize': 7,
+    'legend.fontsize': 7,
+})
+
+LINE_STYLES = ['-', '-', '-', '-']
+SMOOTH = 10
+
 df = pd.read_csv("../graph-data/master_results.csv")
 
 default_params = {
@@ -20,83 +32,56 @@ SWEEP_PC       = [0.0,  0.01, 0.02, 0.05]
 SWEEP_TRN_SIZE = [5,    10,   20,   35]
 
 
-def plot_param_sweep(df, fixed, vary_col, vary_vals,
-                     fitness_col, ylabel, title, filename):
-    """
-    Plot mean ± std of `fitness_col` across generations for each value in
-    `vary_vals`, holding all other params fixed at `fixed`.
-    """
+def plot_combined(df, fixed, vary_col, vary_vals, title, filename):
     mask = pd.Series(True, index=df.index)
     for col, val in fixed.items():
         if col != vary_col:
             mask &= (df[col] == val)
     filtered = df[mask]
 
-    plt.figure(figsize=(10, 6))
-    for val in vary_vals:
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 2.5))
+
+    for i, val in enumerate(vary_vals):
         subset  = filtered[filtered[vary_col] == val]
-        grouped = subset.groupby("generation")[fitness_col]
-        mean    = grouped.mean()
-        std     = grouped.std()
-        gens    = mean.index
+        grouped = subset.groupby("generation")
+        best    = grouped["best_fitness"].mean().rolling(SMOOTH, min_periods=1).mean()
+        avg     = grouped["avg_fitness"].mean().rolling(SMOOTH, min_periods=1).mean()
+        gens    = best.index
+        label   = f"{vary_col}={val}" + (" (default)" if val == default_params[vary_col] else "")
+        lw      = 2.5 if val == default_params[vary_col] else 1.5
 
-        label = f"{vary_col}={val}"
-        if val == default_params[vary_col]: 
-            plt.plot(gens, mean, label=label + " (default)", linewidth=2.5)
-        else:
-            plt.plot(gens, mean, label=label)
-        plt.fill_between(gens, mean - std, mean + std, alpha=0.2)
+        ax1.plot(gens, best, label=label, linewidth=lw)
+        ax2.plot(gens, avg,  label=label, linewidth=lw)
 
-    plt.xlabel("Generation")
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.legend()
-    plt.grid(True)
+    for ax, ylabel in zip([ax1, ax2], ["Best Fitness", "Average Fitness"]):
+        ax.set_xlabel("Generation")
+        ax.set_ylabel(ylabel)
+        ax.grid(True)
+
+    ax1.set_title("Best Fitness")
+    ax2.set_title("Average Fitness")
+
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=4)
+    fig.suptitle(title, fontsize=8)
     plt.tight_layout()
-    plt.savefig("../graphs/" + filename, dpi=150)
+    plt.savefig("../graphs/" + filename, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Saved {filename}")
 
 
-plot_param_sweep(df, default_params, "N", SWEEP_N,
-                 "best_fitness", "Best Fitness",
-                 "Effect of Population Size on Best Fitness",
-                 "plot_N_best.png")
+plot_combined(df, default_params, "N", SWEEP_N,
+              "Effect of Population Size", "plot_N.png")
 
-plot_param_sweep(df, default_params, "N", SWEEP_N,
-                 "avg_fitness", "Average Fitness",
-                 "Effect of Population Size on Average Fitness",
-                 "plot_N_avg.png")
+plot_combined(df, default_params, "p_m", SWEEP_PM,
+              "Effect of Mutation Probability", "plot_pm.png")
 
-plot_param_sweep(df, default_params, "p_m", SWEEP_PM,
-                 "best_fitness", "Best Fitness",
-                 "Effect of Mutation Probability on Best Fitness",
-                 "plot_pm_best.png")
+plot_combined(df, default_params, "p_c", SWEEP_PC,
+              "Effect of Crossover Probability", "plot_pc.png")
 
-plot_param_sweep(df, default_params, "p_m", SWEEP_PM,
-                 "avg_fitness", "Average Fitness",
-                 "Effect of Mutation Probability on Average Fitness",
-                 "plot_pm_avg.png")
+plot_combined(df, default_params, "trn_size", SWEEP_TRN_SIZE,
+              "Effect of Tournament Size", "plot_trn.png")
 
-plot_param_sweep(df, default_params, "p_c", SWEEP_PC,
-                 "best_fitness", "Best Fitness",
-                 "Effect of Uniform Crossover Probability on Best Fitness",
-                 "plot_pc_best.png")
-
-plot_param_sweep(df, default_params, "p_c", SWEEP_PC,
-                 "avg_fitness", "Average Fitness",
-                 "Effect of Uniform Crossover Probability on Average Fitness",
-                 "plot_pc_avg.png")
-
-plot_param_sweep(df, default_params, "trn_size", SWEEP_TRN_SIZE,
-                 "best_fitness", "Best Fitness",
-                 "Effect of Tournament Size on Best Fitness",
-                 "plot_trn_best.png")
-
-plot_param_sweep(df, default_params, "trn_size", SWEEP_TRN_SIZE,
-                 "avg_fitness", "Average Fitness",
-                 "Effect of Tournament Size on Average Fitness",
-                 "plot_trn_avg.png")
 
 last_gen = df["generation"].max()
 
@@ -106,13 +91,13 @@ hm1 = df[
     (df["generation"] == last_gen)
 ].groupby(["p_m", "p_c"])["best_fitness"].mean().unstack()
 
-plt.figure(figsize=(8, 6))
-sns.heatmap(hm1, annot=True, fmt=".2f", cmap="viridis")
+plt.figure(figsize=(3.5, 2.5))
+sns.heatmap(hm1, annot=True, fmt=".2f", cmap="viridis", annot_kws={"size": 7})
 plt.ylabel("Mutation Probability (p_m)")
 plt.xlabel("Crossover Probability (p_c)")
 plt.title(f"Mean Best Fitness at Generation {last_gen}\n(N={default_params['N']}, trn={default_params['trn_size']})")
 plt.tight_layout()
-plt.savefig("../graphs/heatmap_pm_pc.png", dpi=150)
+plt.savefig("../graphs/heatmap_pm_pc.png", dpi=300, bbox_inches='tight')
 plt.close()
 print("Saved heatmap_pm_pc.png")
 
@@ -122,14 +107,47 @@ hm2 = df[
     (df["generation"] == last_gen)
 ].groupby(["N", "trn_size"])["best_fitness"].mean().unstack()
 
-plt.figure(figsize=(8, 6))
-sns.heatmap(hm2, annot=True, fmt=".2f", cmap="viridis")
+plt.figure(figsize=(3.5, 2.5))
+sns.heatmap(hm2, annot=True, fmt=".2f", cmap="viridis", annot_kws={"size": 7})
 plt.ylabel("Population Size (N)")
 plt.xlabel("Tournament Size")
 plt.title(f"Mean Best Fitness at Generation {last_gen}\n(p_m={default_params['p_m']}, p_c={default_params['p_c']})")
 plt.tight_layout()
-plt.savefig("../graphs/heatmap_N_trn.png", dpi=150)
+plt.savefig("../graphs/heatmap_N_trn.png", dpi=300, bbox_inches='tight')
 plt.close()
 print("Saved heatmap_N_trn.png")
+
+
+params_and_sweeps = [
+    ("N",        SWEEP_N,        "Population Size (N)"),
+    ("p_m",      SWEEP_PM,       "Mutation Probability (p_m)"),
+    ("p_c",      SWEEP_PC,       "Crossover Probability (p_c)"),
+    ("trn_size", SWEEP_TRN_SIZE, "Tournament Size"),
+]
+
+fig, axes = plt.subplots(2, 2, figsize=(7, 5))
+
+for ax, (param_col, param_vals, xlabel) in zip(axes.flat, params_and_sweeps):
+    positive_counts = []
+    for val in param_vals:
+        mask = pd.Series(True, index=df.index)
+        for col, default_val in default_params.items():
+            if col != param_col:
+                mask &= (df[col] == default_val)
+        subset = df[mask & (df[param_col] == val)]
+        positive_counts.append((subset["best_fitness"] > 0).sum())
+
+    bars = ax.bar([str(v) for v in param_vals], positive_counts, color='steelblue')
+    ax.bar_label(bars)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Count")
+    ax.set_ylim(0, max(positive_counts) * 1.15 if max(positive_counts) > 0 else 1)
+    ax.set_title(f"Positive Fitness by {xlabel}")
+
+fig.suptitle("Generations with Positive Best Fitness", fontsize=8)
+plt.tight_layout()
+plt.savefig("../graphs/outliers.png", dpi=300, bbox_inches='tight')
+plt.close()
+print("Saved outliers.png")
 
 print("\nAll plots saved.")
