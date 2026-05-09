@@ -240,7 +240,7 @@ def run_single(client, n, pm, pc, trn_size, iteration):
             genghis_fitness = best_fitness
             genghis = best
 
-    save_tas(genghis.genome, genghis_fitness, gen)
+    save_tas(genghis.genome, genghis_fitness, f"N{n}_pm{pm}_pc{pc}_trn{trn_size}_iter{iteration}")
 
 """
 # Pre-data generatoin main
