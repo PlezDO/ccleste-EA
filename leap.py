@@ -155,8 +155,8 @@ class ByteArrayProblem(ScalarProblem):
         #     return float('inf') # if player reaches goal, return infinite fitness
 
         # kill individuals who die
-        # if result['deaths'] >= 1:
-        #    return float('-inf')
+        if result['deaths'] >= 1:
+           return float('-1000')
 
         # return closest point player got to goal
         # this might be problematic, we should consider time penalties, or saving last pos
